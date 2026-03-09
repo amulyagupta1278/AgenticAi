@@ -1,0 +1,26 @@
+{
+  "version": "v1",
+  "source_file": "/Users/amulyagupta/ML_projects/AgenticAi/data/processed/tickets_clean.csv",
+  "n_total": 16335,
+  "n_train": 13067,
+  "n_val": 1634,
+  "n_test": 1634,
+  "n_features": 20237,
+  "n_classes": 10,
+  "classes": [
+    "billing_and_payments",
+    "customer_service",
+    "general_inquiry",
+    "human_resources",
+    "it_support",
+    "product_support",
+    "returns_and_exchanges",
+    "sales_and_pre-sales",
+    "service_outages_and_maintenance",
+    "technical_support"
+  ],
+  "val_size": 0.1,
+  "test_size": 0.1,
+  "seed": 42,
+  "created_at": "2026-03-09T09:59:01.968519+00:00"
+}
