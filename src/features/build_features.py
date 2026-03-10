@@ -10,15 +10,20 @@ ROOT = Path(__file__).resolve().parents[2]
 MODELS_DIR = ROOT / "models"
 
 
-def get_vectorizer(max_features=50_000, ngram_range=(1, 2)) -> TfidfVectorizer:
+def get_vectorizer(
+    max_features=50_000,
+    ngram_range=(1, 2),
+    min_df=5,    # ignore terms appearing in fewer than 5 documents (noise filter)
+    max_df=0.8,  # ignore terms appearing in >80% of documents (stop-word effect)
+) -> TfidfVectorizer:
     return TfidfVectorizer(
         max_features=max_features,
         ngram_range=ngram_range,
         sublinear_tf=True,
         strip_accents="unicode",
         analyzer="word",
-        min_df=5,    # ignore terms appearing in fewer than 5 documents (noise filter)
-        max_df=0.8,  # ignore terms appearing in >80% of documents (stop-word effect)
+        min_df=min_df,
+        max_df=max_df,
         token_pattern=r"\b[a-z][a-z]+\b",  # skip single chars and numbers
     )
 
