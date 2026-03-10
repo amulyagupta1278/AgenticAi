@@ -1,0 +1,49 @@
+{
+  "teams": {
+    "technical_support": {
+      "team": "Engineering Support",
+      "default_priority": "medium"
+    },
+    "billing_and_payments": {
+      "team": "Finance Team",
+      "default_priority": "medium"
+    },
+    "customer_service": {
+      "team": "Customer Success",
+      "default_priority": "low"
+    },
+    "product_support": {
+      "team": "Product Team",
+      "default_priority": "medium"
+    },
+    "returns_and_exchanges": {
+      "team": "Returns Desk",
+      "default_priority": "medium"
+    },
+    "it_support": {
+      "team": "IT Helpdesk",
+      "default_priority": "medium"
+    },
+    "sales_and_pre_sales": {
+      "team": "Sales Team",
+      "default_priority": "low"
+    },
+    "service_outages_and_maintenance": {
+      "team": "Infrastructure / SRE",
+      "default_priority": "high"
+    },
+    "human_resources": {
+      "team": "HR Department",
+      "default_priority": "medium"
+    },
+    "general_inquiry": {
+      "team": "General Support",
+      "default_priority": "low"
+    }
+  },
+  "escalation_keywords": [
+    "outage", "down", "emergency", "security", "breach",
+    "fraud", "urgent", "critical", "production down",
+    "locked out", "compromised", "data loss", "legal"
+  ]
+}
