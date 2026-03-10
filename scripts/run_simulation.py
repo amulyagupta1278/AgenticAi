@@ -27,7 +27,7 @@ OUTPUT_DIR = ROOT / "data" / "processed"
 AVG_TICKET_COST = 20.0  # conservative estimate per ticket
 
 
-def run(sample_size: int = 500, seed: int = 42):
+def run(sample_size: int, seed: int):
     df = pd.read_csv(DATA_PATH)
     sample = df.sample(n=min(sample_size, len(df)), random_state=seed)
 
@@ -148,7 +148,7 @@ def run(sample_size: int = 500, seed: int = 42):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--sample", type=int, default=500)
+    parser.add_argument("--sample", type=int, default=800)
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
     run(args.sample, args.seed)
