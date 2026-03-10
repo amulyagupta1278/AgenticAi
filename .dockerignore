@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# virtual environments
+venv/
+.venv/
+
+# data (large CSVs never needed at runtime)
+data/
+
+# per-model training artifacts (only classifier.pkl is copied explicitly)
+models/random_forest.pkl
+models/logistic_regression.pkl
+models/linear_svc.pkl
+
+# MLflow experiment tracking
+mlruns/
+
+# notebooks
+notebooks/
+
+# tests
+tests/
+
+# dev
+.env
+.git/
+.gitignore
+.pytest_cache/
+htmlcov/
+.coverage
+*.md
+Makefile
+config.yaml
+run_pipeline.py

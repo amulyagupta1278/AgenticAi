@@ -1,0 +1,33 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+.venv/
+venv/
+
+# data — keep structure, ignore actual files
+data/raw/*.csv
+data/processed/*.csv
+data/processed/simulation_results.csv
+data/processed/simulation_metrics.json
+
+# trained models
+models/*.pkl
+
+# knowledge base — RAG index (rebuilt from data)
+knowledge_base/rag_index/
+knowledge_base/keywords.json
+
+# mlflow artifacts
+mlruns/
+
+# jupyter
+.ipynb_checkpoints/
+
+# pytest
+.pytest_cache/
+htmlcov/
+.coverage
+
+# mac
+.DS_Store

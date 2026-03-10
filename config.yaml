@@ -1,0 +1,30 @@
+data:
+  raw_filename: customer_support_tickets.csv
+  test_size: 0.2
+  random_state: 42
+
+features:
+  max_features: 10000
+  ngram_range: [1, 2]
+  min_df: 2
+  sublinear_tf: true
+
+models:
+  default: logistic_regression
+  logistic_regression:
+    C: 1.0
+    max_iter: 1000
+    solver: lbfgs
+  linear_svc:
+    C: 1.0
+    max_iter: 2000
+  random_forest:
+    n_estimators: 200
+    random_state: 42
+
+mlflow:
+  experiment: ticket-classifier
+
+api:
+  host: "0.0.0.0"
+  port: 8000
