@@ -48,7 +48,8 @@ class PreventionAgent(BaseAgent):
 
     def process(self, **kw) -> dict:
         if self._df is None or self._df.empty:
-            return {"insights": [], "total_tickets_analyzed": 0,
+            return {"generated_at": datetime.now(timezone.utc).isoformat(),
+                    "insights": [], "total_tickets_analyzed": 0,
                     "top_recurring_issues": [], "prevention_recommendations": []}
 
         df = self._df

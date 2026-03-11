@@ -9,6 +9,8 @@ venv/
 
 # data (large CSVs never needed at runtime)
 data/
+!data/processed/
+!data/processed/training_dataset.csv
 
 # per-model training artifacts (only classifier.pkl is copied explicitly)
 models/random_forest.pkl

@@ -14,6 +14,7 @@ COPY models/classifier.pkl        models/classifier.pkl
 COPY models/tfidf_vectorizer.pkl  models/tfidf_vectorizer.pkl
 COPY models/label_encoder.pkl     models/label_encoder.pkl
 COPY knowledge_base/ knowledge_base/
+COPY data/processed/training_dataset.csv data/processed/training_dataset.csv
 
 EXPOSE 8000
 
