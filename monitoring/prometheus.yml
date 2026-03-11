@@ -4,8 +4,8 @@ global:
 
 scrape_configs:
   - job_name: "ticket-classifier"
-    metrics_path: /metrics
+    metrics_path: /metrics/
     static_configs:
-      - targets: ["app:3000"]
+      - targets: ["host.docker.internal:8000"]
         labels:
           service: "ticket-classifier"
