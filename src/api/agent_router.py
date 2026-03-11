@@ -88,6 +88,16 @@ def get_insights():
     return InsightsResponse(**result)
 
 
+@router.get("/simulation")
+def get_simulation():
+    """Return pre-computed simulation metrics if available."""
+    import json
+    metrics_path = ROOT / "data" / "processed" / "simulation_metrics.json"
+    if not metrics_path.exists():
+        raise HTTPException(404, "Simulation metrics not found. Run: python scripts/run_simulation.py")
+    return json.loads(metrics_path.read_text())
+
+
 @router.get("/status", response_model=AgentHealthResponse)
 def agent_status():
     """Health check for the full agent system."""

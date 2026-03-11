@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agentic AI - Ticket Resolution System</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+
+    .hdr{background:linear-gradient(135deg,#1e293b,#0f172a);border-bottom:1px solid #334155;padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+    .hdr h1{font-size:18px;font-weight:600;color:#f1f5f9}
+    .hdr h1 b{color:#38bdf8}
+    .pills{display:flex;gap:10px}
+    .pill{display:flex;align-items:center;gap:5px;background:#0f172a;border:1px solid #334155;border-radius:16px;padding:3px 10px;font-size:11px;color:#94a3b8}
+    .dot{width:6px;height:6px;border-radius:50%}
+    .dot.on{background:#22c55e;box-shadow:0 0 5px #22c55e}
+    .dot.off{background:#ef4444;box-shadow:0 0 5px #ef4444}
+    .dot.load{background:#eab308;animation:pulse 1s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+    .wrap{max-width:1460px;margin:0 auto;padding:18px 24px;display:flex;flex-direction:column;gap:16px}
+    .row{display:grid;gap:16px}
+    .r2{grid-template-columns:1fr 1fr}
+    .r3{grid-template-columns:1fr 1fr 1fr}
+
+    .card{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:16px}
+    .card-t{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+    .card-t .sub{font-weight:400;font-size:10px;color:#475569;text-transform:none;letter-spacing:0}
+
+    /* Metrics */
+    .mg{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+    .mc{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px 8px;text-align:center;transition:border-color .2s}
+    .mc:hover{border-color:#38bdf8}
+    .mv{font-size:24px;font-weight:700;color:#38bdf8}
+    .ml{font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+    .mc.loading .mv{color:#334155}
+
+    /* Table */
+    .stbl{width:100%;border-collapse:collapse;font-size:11px}
+    .stbl th{text-align:left;padding:5px 6px;color:#475569;font-weight:600;border-bottom:1px solid #334155;font-size:9px;text-transform:uppercase;letter-spacing:.05em}
+    .stbl td{padding:4px 6px;border-bottom:1px solid rgba(51,65,85,.3);color:#cbd5e1}
+    .stbl tr:hover td{background:rgba(56,189,248,.03)}
+    .barbg{height:5px;background:#0f172a;border-radius:3px;overflow:hidden;min-width:60px}
+    .barfill{height:100%;border-radius:3px;transition:width .6s}
+
+    /* Input */
+    textarea{width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 12px;color:#e2e8f0;font-size:13px;font-family:inherit;resize:vertical;min-height:80px;outline:none;transition:border-color .2s}
+    textarea:focus{border-color:#38bdf8}
+    textarea::placeholder{color:#475569}
+    .exs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+    .exb{background:#0f172a;border:1px solid #334155;border-radius:5px;padding:4px 8px;font-size:10px;color:#94a3b8;cursor:pointer;transition:all .12s}
+    .exb:hover{border-color:#38bdf8;color:#38bdf8}
+    .brow{display:flex;gap:6px;margin-top:8px}
+    .btn{padding:8px 16px;border-radius:7px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:5px}
+    .bp{background:#2563eb;color:#fff}.bp:hover{background:#3b82f6}
+    .bg{background:transparent;border:1px solid #475569;color:#94a3b8}.bg:hover{border-color:#38bdf8;color:#38bdf8}
+    .btn:disabled{opacity:.35;cursor:not-allowed}
+    .sp{display:none;width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .5s linear infinite}
+    .btn.ld .sp{display:inline-block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Result */
+    .rpanel{min-height:160px}
+    .rempty{color:#475569;font-size:12px;text-align:center;padding:30px 0}
+    .bdg{display:inline-block;padding:3px 9px;border-radius:16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+    .bdg-g{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.25)}
+    .bdg-b{background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.25)}
+    .bdg-r{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+    .rg{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;margin-bottom:10px}
+    .rb{background:#0f172a;border-radius:5px;padding:6px 8px}
+    .rl{font-size:8px;color:#64748b;text-transform:uppercase;letter-spacing:.08em}
+    .rv{font-size:14px;font-weight:600;color:#f1f5f9;margin-top:1px}
+    .rans{background:#0f172a;border:1px solid #334155;border-radius:6px;padding:8px;font-size:12px;color:#cbd5e1;line-height:1.5;max-height:120px;overflow-y:auto;margin-top:6px}
+    .rsub{font-size:10px;color:#475569;margin-top:3px}
+    .rscores{display:flex;flex-direction:column;gap:2px;margin-top:8px}
+    .rsrow{display:flex;align-items:center;gap:5px;font-size:10px}
+    .rsrow .cat{width:140px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .rsrow .barbg{flex:1}
+    .rsrow .pct{width:34px;text-align:right;color:#64748b;font-family:monospace}
+
+    /* Trace */
+    .tflow{display:flex;align-items:center;gap:3px;flex-wrap:wrap;margin-top:6px}
+    .tnode{background:#0f172a;border:1px solid #334155;border-radius:6px;padding:6px 10px;text-align:center;min-width:80px}
+    .tnode .tn{font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase}
+    .tnode .tm{font-size:15px;font-weight:700;color:#38bdf8;margin-top:1px}
+    .tarr{color:#334155;font-size:16px}
+
+    /* Tabs */
+    .tabs{display:flex;gap:2px;margin-bottom:12px;background:#0f172a;border-radius:7px;padding:3px}
+    .tab{padding:6px 12px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;color:#64748b;border:none;background:none;transition:all .12s}
+    .tab.act{background:#334155;color:#f1f5f9}
+    .tab:hover:not(.act){color:#cbd5e1}
+    .tp{display:none}.tp.act{display:block}
+
+    /* Insights */
+    .ig{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:360px;overflow-y:auto}
+    .ic{background:#0f172a;border:1px solid #334155;border-radius:7px;padding:10px}
+    .ich{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+    .icn{font-size:12px;font-weight:600;color:#f1f5f9;text-transform:capitalize}
+    .itr{font-size:9px;padding:2px 6px;border-radius:8px;font-weight:700;text-transform:uppercase}
+    .ti{background:rgba(251,146,60,.12);color:#fb923c}
+    .td{background:rgba(34,197,94,.12);color:#22c55e}
+    .ts{background:rgba(100,116,139,.1);color:#64748b}
+    .ist{font-size:10px;color:#64748b;margin-bottom:4px}
+    .itags{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:4px}
+    .itag{background:#1e293b;border:1px solid #334155;padding:1px 5px;border-radius:3px;font-size:9px;color:#94a3b8}
+    .irec{font-size:10px;color:#94a3b8;line-height:1.3}
+    .ic.overall{grid-column:1/-1;border-color:rgba(56,189,248,.25)}
+    .ic.overall .icn{color:#38bdf8}
+
+    /* Health */
+    .hlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+    .hi{background:#0f172a;border:1px solid #334155;border-radius:7px;padding:10px;display:flex;align-items:center;justify-content:space-between}
+    .hn{font-size:12px;color:#e2e8f0;font-weight:500;text-transform:capitalize}
+    .ho{color:#22c55e;font-weight:700;font-size:11px}
+    .hf{color:#ef4444;font-weight:700;font-size:11px}
+
+    /* History */
+    .hist{max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+    .hentry{background:#0f172a;border:1px solid #334155;border-radius:6px;padding:8px 10px;cursor:pointer;transition:border-color .12s}
+    .hentry:hover{border-color:#38bdf8}
+    .he-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+    .he-desc{font-size:11px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .he-time{font-size:10px;color:#475569}
+
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#475569;border-radius:2px}
+  </style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1><b>&#9673;</b> Agentic AI <b>|</b> Ticket Resolution System</h1>
+  <div class="pills">
+    <div class="pill"><span class="dot load" id="d1"></span><span id="l1">Connecting...</span></div>
+    <div class="pill"><span class="dot load" id="d2"></span><span id="l2">RAG</span></div>
+    <div class="pill"><span class="dot load" id="d3"></span><span id="l3">Model</span></div>
+    <div class="pill"><span class="dot load" id="d4"></span><span id="l4">Agents</span></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Dynamic Simulation Metrics -->
+  <div class="card">
+    <div class="card-t">Simulation Results <span class="sub" id="simSub">Loading...</span></div>
+    <div class="mg" id="metricsGrid">
+      <div class="mc loading"><div class="mv">--</div><div class="ml">Accuracy</div></div>
+      <div class="mc loading"><div class="mv">--</div><div class="ml">Auto-Resolve</div></div>
+      <div class="mc loading"><div class="mv">--</div><div class="ml">Resolution Acc.</div></div>
+      <div class="mc loading"><div class="mv">--</div><div class="ml">Avg Latency</div></div>
+      <div class="mc loading"><div class="mv">--</div><div class="ml">Annual Savings</div></div>
+      <div class="mc loading"><div class="mv">--</div><div class="ml">Tests</div></div>
+    </div>
+  </div>
+
+  <!-- Per-Category Breakdown -->
+  <div class="card">
+    <div class="card-t">Per-Category Breakdown</div>
+    <table class="stbl"><thead><tr><th>Category</th><th>Tickets</th><th>Resolved</th><th>Correct</th><th>Rate</th><th style="width:22%"></th></tr></thead><tbody id="simTbl"><tr><td colspan="6" style="text-align:center;color:#475569;padding:16px;">Loading simulation data...</td></tr></tbody></table>
+  </div>
+
+  <!-- Input + Result -->
+  <div class="row r2">
+    <div class="card">
+      <div class="card-t">Submit Ticket</div>
+      <textarea id="inp" placeholder="Describe your support issue..."></textarea>
+      <div class="exs">
+        <button class="exb" onclick="setEx('billing')">Billing</button>
+        <button class="exb" onclick="setEx('tech')">Technical</button>
+        <button class="exb" onclick="setEx('sales')">Sales</button>
+        <button class="exb" onclick="setEx('urgent')">Urgent</button>
+        <button class="exb" onclick="setEx('pwd')">Password</button>
+        <button class="exb" onclick="setEx('ret')">Return</button>
+        <button class="exb" onclick="setEx('hr')">HR</button>
+      </div>
+      <div class="brow">
+        <button class="btn bp" id="rbtn" onclick="doResolve()"><span class="sp"></span>Resolve (Full Pipeline)</button>
+        <button class="btn bg" id="cbtn" onclick="doClassify()"><span class="sp"></span>Classify Only</button>
+      </div>
+
+      <!-- History -->
+      <div style="margin-top:14px;">
+        <div class="card-t" style="margin-bottom:6px;">Recent Tickets</div>
+        <div class="hist" id="histList"><div class="rempty">No tickets submitted yet</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-t">Pipeline Result</div>
+        <div class="rpanel" id="rPanel"><div class="rempty">Submit a ticket to see the agent pipeline in action</div></div>
+      </div>
+      <div class="card" id="traceCard" style="display:none;">
+        <div class="card-t">Agent Trace</div>
+        <div class="tflow" id="tFlow"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insights / Health / Recurring -->
+  <div class="card">
+    <div class="tabs" id="mainTabs">
+      <button class="tab act" data-t="insights">Prevention Insights</button>
+      <button class="tab" data-t="health">Agent Health</button>
+      <button class="tab" data-t="recurring">Top Recurring Issues</button>
+      <button class="tab" data-t="metrics">Prometheus Metrics</button>
+    </div>
+    <div class="tp act" id="tp-insights"><div class="ig" id="insGrid"><div class="rempty">Loading...</div></div></div>
+    <div class="tp" id="tp-health"><div class="hlist" id="hList"><div class="rempty">Loading...</div></div></div>
+    <div class="tp" id="tp-recurring"><div id="recList"><div class="rempty">Loading...</div></div></div>
+    <div class="tp" id="tp-metrics"><div id="metricsPanel"><div class="rempty">Loading metrics...</div></div></div>
+  </div>
+
+</div>
+
+<script>
+const EX={
+  billing:"I was charged twice for my subscription this month and need a refund for the duplicate charge",
+  tech:"My app keeps crashing every time I try to upload a file larger than 10MB on the dashboard",
+  sales:"I want to know about enterprise pricing for 500 seats and what volume discounts are available",
+  urgent:"URGENT: Production server is down, all services outage, customers cannot access the platform",
+  pwd:"I forgot my password and the reset email is not arriving in my inbox after multiple attempts",
+  ret:"I received a damaged product and would like to return it for a full refund or exchange",
+  hr:"I need to update my direct deposit information for payroll and change my tax withholding"
+};
+function setEx(k){document.getElementById('inp').value=EX[k]}
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function fmt(s){return(s||'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}
+const history=[];
+
+// ── Status ──
+async function checkStatus(){
+  try{
+    const[h,s]=await Promise.all([fetch('/health'),fetch('/agent/status')]);
+    const hd=await h.json(), sd=await s.json();
+    setD('d1','l1',true,'API Online');
+    setD('d2','l2',sd.rag_index_loaded,'RAG '+(sd.rag_index_loaded?'Loaded':'Down'));
+    setD('d3','l3',sd.model_loaded,'Model '+(sd.model_loaded?'Loaded':'Down'));
+    const allOk=sd.agents&&Object.values(sd.agents).every(a=>a.ok);
+    setD('d4','l4',allOk,'Agents '+(allOk?'OK':'Error'));
+    renderHealth(sd);
+  }catch(e){
+    setD('d1','l1',false,'API Offline');
+    setD('d2','l2',false,'RAG ?');
+    setD('d3','l3',false,'Model ?');
+    setD('d4','l4',false,'Agents ?');
+  }
+}
+function setD(di,li,ok,txt){
+  document.getElementById(di).className='dot '+(ok?'on':'off');
+  document.getElementById(li).textContent=txt;
+}
+
+// ── Simulation (dynamic from API) ──
+async function loadSimulation(){
+  try{
+    const res=await fetch('/agent/simulation');
+    const d=await res.json();
+    document.getElementById('simSub').textContent=d.total_tickets+' tickets simulated';
+    document.getElementById('metricsGrid').innerHTML=`
+      <div class="mc"><div class="mv">${d.classification_accuracy_pct}%</div><div class="ml">Accuracy</div></div>
+      <div class="mc"><div class="mv">${d.auto_resolved_pct}%</div><div class="ml">Auto-Resolve</div></div>
+      <div class="mc"><div class="mv">${d.auto_resolution_accuracy_pct}%</div><div class="ml">Resolution Acc.</div></div>
+      <div class="mc"><div class="mv">${d.avg_processing_ms}ms</div><div class="ml">Avg Latency</div></div>
+      <div class="mc"><div class="mv">$${(d.estimated_annual_savings_usd/1000).toFixed(0)}K</div><div class="ml">Annual Savings</div></div>
+      <div class="mc"><div class="mv">${d.auto_resolved}/${d.total_tickets}</div><div class="ml">Deflected</div></div>
+    `;
+    // Per category table
+    if(d.per_category){
+      let h='';
+      const cats=Object.entries(d.per_category).sort((a,b)=>{
+        const ra=a[1].total>0?a[1].auto_resolved/a[1].total:0;
+        const rb=b[1].total>0?b[1].auto_resolved/b[1].total:0;
+        return rb-ra;
+      });
+      cats.forEach(([cat,v])=>{
+        const rate=v.total>0?Math.round(v.auto_resolved/v.total*100):0;
+        const c=rate>=80?'#22c55e':rate>=50?'#eab308':rate>0?'#f97316':'#ef4444';
+        h+=`<tr><td style="font-weight:500">${fmt(cat)}</td><td>${v.total}</td><td>${v.auto_resolved}</td><td>${v.correct}</td><td style="font-weight:600;color:${c}">${rate}%</td><td><div class="barbg"><div class="barfill" style="width:${rate}%;background:${c}"></div></div></td></tr>`;
+      });
+      document.getElementById('simTbl').innerHTML=h;
+    }
+  }catch(e){
+    document.getElementById('simSub').textContent='Failed to load';
+  }
+}
+
+// ── Health ──
+function renderHealth(s){
+  let h='';
+  if(s.agents&&typeof s.agents==='object'){
+    Object.entries(s.agents).forEach(([n,info])=>{
+      h+=`<div class="hi"><span class="hn">${fmt(n)} Agent</span><span class="${info.ok?'ho':'hf'}">${info.ok?'\u2713 Healthy':'\u2717 Down'}</span></div>`;
+    });
+  }
+  h+=`<div class="hi"><span class="hn">RAG Index</span><span class="${s.rag_index_loaded?'ho':'hf'}">${s.rag_index_loaded?'\u2713 Loaded':'\u2717 Not Loaded'}</span></div>`;
+  h+=`<div class="hi"><span class="hn">Classifier Model</span><span class="${s.model_loaded?'ho':'hf'}">${s.model_loaded?'\u2713 Loaded':'\u2717 Not Loaded'}</span></div>`;
+  document.getElementById('hList').innerHTML=h;
+}
+
+// ── Insights ──
+async function loadInsights(){
+  try{
+    const res=await fetch('/agent/insights');
+    const d=await res.json();
+    let h='';
+    if(d.insights&&d.insights.length){
+      d.insights.forEach(i=>{
+        const tc=i.trend==='increasing'?'ti':i.trend==='decreasing'?'td':'ts';
+        h+=`<div class="ic"><div class="ich"><span class="icn">${fmt(i.category)}</span><span class="itr ${tc}">${i.trend||'stable'}</span></div>`;
+        h+=`<div class="ist">${i.ticket_count||0} tickets \u2022 ${(i.percentage||0).toFixed(1)}% of total</div>`;
+        if(i.recurring_tags&&i.recurring_tags.length) h+=`<div class="itags">${i.recurring_tags.map(k=>`<span class="itag">${esc(k)}</span>`).join('')}</div>`;
+        if(i.recommendation) h+=`<div class="irec">${esc(i.recommendation)}</div>`;
+        h+=`</div>`;
+      });
+      if(d.prevention_recommendations&&d.prevention_recommendations.length){
+        h+=`<div class="ic overall"><div class="ich"><span class="icn">Overall Recommendations</span></div>`;
+        d.prevention_recommendations.forEach(r=>{h+=`<div class="irec" style="margin-bottom:3px">\u2022 ${esc(r)}</div>`});
+        h+=`</div>`;
+      }
+    }else h='<div class="rempty">No insights available</div>';
+    document.getElementById('insGrid').innerHTML=h;
+
+    // Recurring
+    if(d.top_recurring_issues&&d.top_recurring_issues.length){
+      let rh='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+      d.top_recurring_issues.forEach(r=>{
+        rh+=`<div style="background:#0f172a;border:1px solid #334155;border-radius:7px;padding:8px 14px;display:flex;align-items:center;gap:8px"><span style="font-size:18px;font-weight:700;color:#38bdf8">#${r.rank}</span><span style="font-size:13px;color:#e2e8f0">${esc(r.keyword)}</span></div>`;
+      });
+      rh+='</div>';
+      document.getElementById('recList').innerHTML=rh;
+    }
+  }catch(e){
+    document.getElementById('insGrid').innerHTML=`<div class="rempty" style="color:#f87171">${e.message}</div>`;
+  }
+}
+
+// ── Resolve ──
+async function doResolve(){
+  const text=document.getElementById('inp').value.trim();
+  if(!text)return;
+  const btn=document.getElementById('rbtn');
+  btn.classList.add('ld');btn.disabled=true;
+  try{
+    const t0=performance.now();
+    const res=await fetch('/agent/resolve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({description:text})});
+    const d=await res.json();
+    const clientMs=Math.round(performance.now()-t0);
+    if(res.ok){renderResolve(d);addHistory(text,d,clientMs)}
+    else document.getElementById('rPanel').innerHTML=`<div class="rempty" style="color:#f87171">Error ${res.status}: ${esc(JSON.stringify(d.detail||d))}</div>`;
+  }catch(e){document.getElementById('rPanel').innerHTML=`<div class="rempty" style="color:#f87171">${e.message}</div>`}
+  btn.classList.remove('ld');btn.disabled=false;
+}
+
+function renderResolve(d){
+  const c=d.classification||{},r=d.resolution||{},rt=d.routing||{};
+  const st=d.status||'unknown';
+  const bc=st==='auto_resolved'?'bdg-g':st==='escalated'?'bdg-r':'bdg-b';
+  const sl=st==='auto_resolved'?'Auto-Resolved':st==='escalated'?'Escalated':'Routed';
+
+  let h=`<span class="bdg ${bc}">${sl}</span>`;
+  h+=`<div class="rg">`;
+  h+=`<div class="rb"><div class="rl">Category</div><div class="rv" style="font-size:11px">${fmt(c.category)}</div></div>`;
+  h+=`<div class="rb"><div class="rl">Confidence</div><div class="rv">${((c.confidence||0)*100).toFixed(1)}%</div></div>`;
+  h+=`<div class="rb"><div class="rl">Tier</div><div class="rv" style="font-size:11px;text-transform:uppercase">${c.confidence_tier||'-'}</div></div>`;
+  h+=`<div class="rb"><div class="rl">Pipeline</div><div class="rv">${(d.processing_time_ms||0).toFixed(0)}ms</div></div>`;
+  h+=`</div>`;
+
+  if(r.resolved&&r.answer){
+    h+=`<div class="rl" style="margin-top:2px">Resolution Answer</div>`;
+    h+=`<div class="rans">${esc(r.answer)}</div>`;
+    h+=`<div class="rsub">Similarity: ${((r.similarity_score||0)*100).toFixed(1)}% | Source: ${esc(r.source_ticket_subject||'')}</div>`;
+  }
+
+  if(rt&&rt.team){
+    h+=`<div class="rg" style="margin-top:8px">`;
+    h+=`<div class="rb"><div class="rl">Team</div><div class="rv" style="font-size:11px">${esc(rt.team)}</div></div>`;
+    h+=`<div class="rb"><div class="rl">Priority</div><div class="rv" style="font-size:11px;text-transform:uppercase">${rt.priority||'-'}</div></div>`;
+    if(rt.escalated) h+=`<div class="rb"><div class="rl">Escalated</div><div class="rv" style="color:#f87171">YES</div></div>`;
+    h+=`</div>`;
+  }
+  document.getElementById('rPanel').innerHTML=h;
+
+  // Trace
+  if(d.agent_trace&&d.agent_trace.length){
+    let th='';
+    d.agent_trace.forEach((t,i)=>{
+      if(i>0)th+=`<span class="tarr">\u2192</span>`;
+      th+=`<div class="tnode"><div class="tn">${t._agent||'agent'}</div><div class="tm">${(t._ms||0).toFixed(1)}ms</div></div>`;
+    });
+    const col=st==='auto_resolved'?'#22c55e':st==='escalated'?'#ef4444':'#3b82f6';
+    th+=`<span class="tarr">\u2192</span><div class="tnode" style="border-color:${col}"><div class="tn">Total</div><div class="tm" style="color:${col}">${(d.processing_time_ms||0).toFixed(0)}ms</div></div>`;
+    document.getElementById('tFlow').innerHTML=th;
+    document.getElementById('traceCard').style.display='block';
+  }
+}
+
+// ── Classify ──
+async function doClassify(){
+  const text=document.getElementById('inp').value.trim();
+  if(!text)return;
+  const btn=document.getElementById('cbtn');
+  btn.classList.add('ld');btn.disabled=true;
+  try{
+    const res=await fetch('/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({description:text})});
+    const d=await res.json();
+    if(res.ok)renderClassify(d);
+    else document.getElementById('rPanel').innerHTML=`<div class="rempty" style="color:#f87171">${esc(JSON.stringify(d.detail||d))}</div>`;
+  }catch(e){document.getElementById('rPanel').innerHTML=`<div class="rempty" style="color:#f87171">${e.message}</div>`}
+  btn.classList.remove('ld');btn.disabled=false;
+}
+
+function renderClassify(d){
+  let h=`<span class="bdg bdg-b">Classification Only</span>`;
+  h+=`<div class="rg"><div class="rb"><div class="rl">Category</div><div class="rv" style="font-size:11px">${fmt(d.ticket_type)}</div></div><div class="rb"><div class="rl">Confidence</div><div class="rv">${((d.confidence||0)*100).toFixed(1)}%</div></div></div>`;
+  if(d.all_scores){
+    h+=`<div class="rscores">`;
+    Object.entries(d.all_scores).sort((a,b)=>b[1]-a[1]).forEach(([cat,score])=>{
+      const pct=(score*100).toFixed(1);
+      const col=score>0.5?'#38bdf8':score>0.1?'#475569':'#334155';
+      h+=`<div class="rsrow"><span class="cat">${fmt(cat)}</span><div class="barbg"><div class="barfill" style="width:${pct}%;background:${col}"></div></div><span class="pct">${pct}%</span></div>`;
+    });
+    h+=`</div>`;
+  }
+  document.getElementById('rPanel').innerHTML=h;
+}
+
+// ── History ──
+function addHistory(text,d,clientMs){
+  history.unshift({text,status:d.status,category:(d.classification||{}).category,ms:clientMs,time:new Date()});
+  if(history.length>20)history.pop();
+  renderHistory();
+}
+function renderHistory(){
+  if(!history.length){document.getElementById('histList').innerHTML='<div class="rempty">No tickets yet</div>';return}
+  let h='';
+  history.forEach((e,i)=>{
+    const bc=e.status==='auto_resolved'?'bdg-g':e.status==='escalated'?'bdg-r':'bdg-b';
+    const sl=e.status==='auto_resolved'?'Resolved':e.status==='escalated'?'Escalated':'Routed';
+    h+=`<div class="hentry" onclick="document.getElementById('inp').value=history[${i}].text">`;
+    h+=`<div class="he-top"><span class="bdg ${bc}" style="margin:0;font-size:9px;padding:2px 6px">${sl}</span><span class="he-time">${e.ms}ms</span></div>`;
+    h+=`<div class="he-desc">${esc(e.text.substring(0,80))}${e.text.length>80?'...':''}</div>`;
+    h+=`</div>`;
+  });
+  document.getElementById('histList').innerHTML=h;
+}
+
+// ── Tabs ──
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',function(){
+    this.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
+    this.classList.add('act');
+    const card=this.closest('.card');
+    card.querySelectorAll('.tp').forEach(p=>p.classList.remove('act'));
+    card.querySelector('#tp-'+this.dataset.t).classList.add('act');
+  });
+});
+
+// Enter to submit
+document.getElementById('inp').addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doResolve()}
+});
+
+// ── Prometheus Metrics ──
+async function loadMetrics(){
+  try{
+    const res=await fetch('/metrics/');
+    const raw=await res.text();
+    const parsed=parsePrometheus(raw);
+    renderMetrics(parsed);
+  }catch(e){
+    document.getElementById('metricsPanel').innerHTML=`<div class="rempty" style="color:#f87171">Failed to load metrics: ${e.message}</div>`;
+  }
+}
+function parsePrometheus(raw){
+  const m={requests:0,predictions:{},resolutions:{},confidence:[],latencies:[]};
+  raw.split('\n').forEach(line=>{
+    if(line.startsWith('#'))return;
+    let match;
+    if((match=line.match(/http_requests_total\{.*\}\s+([\d.]+)/)))m.requests+=parseFloat(match[1]);
+    if((match=line.match(/predictions_total\{category="([^"]+)"\}\s+([\d.]+)/)))m.predictions[match[1]]=(m.predictions[match[1]]||0)+parseFloat(match[2]);
+    if((match=line.match(/agent_resolutions_total\{status="([^"]+)"\}\s+([\d.]+)/)))m.resolutions[match[1]]=(m.resolutions[match[1]]||0)+parseFloat(match[2]);
+    if((match=line.match(/prediction_confidence_bucket\{le="([^"]+)"\}\s+([\d.]+)/)))m.confidence.push({le:match[1],count:parseFloat(match[2])});
+    if((match=line.match(/agent_pipeline_duration_seconds_bucket\{le="([^"]+)"\}\s+([\d.]+)/)))m.latencies.push({le:match[1],count:parseFloat(match[2])});
+  });
+  return m;
+}
+function renderMetrics(m){
+  let h='<div class="ig">';
+
+  // Request count
+  h+=`<div class="ic"><div class="ich"><span class="icn">HTTP Requests</span><span class="itr ts">${m.requests.toFixed(0)} total</span></div>`;
+  h+=`<div class="irec">Total HTTP requests served by the API since startup.</div></div>`;
+
+  // Resolution outcomes
+  h+=`<div class="ic"><div class="ich"><span class="icn">Resolution Outcomes</span></div>`;
+  const totalRes=Object.values(m.resolutions).reduce((a,b)=>a+b,0);
+  if(totalRes>0){
+    Object.entries(m.resolutions).sort((a,b)=>b[1]-a[1]).forEach(([st,cnt])=>{
+      const pct=(cnt/totalRes*100).toFixed(0);
+      const col=st==='auto_resolved'?'#22c55e':st==='escalated'?'#ef4444':'#3b82f6';
+      h+=`<div style="display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px"><span style="width:100px;color:#94a3b8">${fmt(st)}</span><div class="barbg" style="flex:1"><div class="barfill" style="width:${pct}%;background:${col}"></div></div><span style="width:50px;text-align:right;color:${col};font-weight:600">${cnt.toFixed(0)} (${pct}%)</span></div>`;
+    });
+  }else h+=`<div class="ist">No resolutions recorded yet. Submit tickets to generate metrics.</div>`;
+  h+=`</div>`;
+
+  // Predictions by category
+  h+=`<div class="ic"><div class="ich"><span class="icn">Predictions by Category</span></div>`;
+  const totalPred=Object.values(m.predictions).reduce((a,b)=>a+b,0);
+  if(totalPred>0){
+    Object.entries(m.predictions).sort((a,b)=>b[1]-a[1]).forEach(([cat,cnt])=>{
+      const pct=(cnt/totalPred*100).toFixed(0);
+      h+=`<div style="display:flex;align-items:center;gap:6px;margin-top:3px;font-size:10px"><span style="width:130px;color:#94a3b8">${fmt(cat)}</span><div class="barbg" style="flex:1"><div class="barfill" style="width:${pct}%;background:#38bdf8"></div></div><span style="width:40px;text-align:right;color:#64748b">${cnt.toFixed(0)}</span></div>`;
+    });
+  }else h+=`<div class="ist">No predictions yet.</div>`;
+  h+=`</div>`;
+
+  // Info
+  h+=`<div class="ic"><div class="ich"><span class="icn">Monitoring Stack</span></div>`;
+  h+=`<div class="ist" style="margin-bottom:6px">7 Prometheus metrics exported at /metrics/</div>`;
+  h+=`<div class="itags"><span class="itag">http_requests_total</span><span class="itag">http_request_duration</span><span class="itag">predictions_total</span><span class="itag">prediction_confidence</span><span class="itag">agent_resolutions_total</span><span class="itag">agent_pipeline_duration</span><span class="itag">model_info</span></div>`;
+  h+=`<div class="irec" style="margin-top:6px">Prometheus scrapes /metrics/ every 15s. Grafana dashboard (7 panels) visualizes these when Docker monitoring profile is active.</div>`;
+  h+=`</div>`;
+
+  h+=`</div>`;
+  h+=`<div style="margin-top:10px;text-align:center"><button class="btn bg" onclick="loadMetrics()" style="display:inline-flex">Refresh Metrics</button></div>`;
+  document.getElementById('metricsPanel').innerHTML=h;
+}
+
+// ── Init ──
+checkStatus();
+loadSimulation();
+loadInsights();
+loadMetrics();
+// Auto-refresh status every 30s
+setInterval(checkStatus,30000);
+</script>
+</body>
+</html>

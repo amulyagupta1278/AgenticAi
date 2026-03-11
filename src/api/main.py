@@ -6,6 +6,8 @@ from pathlib import Path
 import joblib
 import numpy as np
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -74,6 +76,15 @@ app = FastAPI(
 
 app.include_router(agent_router)
 instrument_app(app)
+
+# Serve frontend
+STATIC_DIR = ROOT / "static"
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+    @app.get("/", include_in_schema=False)
+    def serve_frontend():
+        return FileResponse(str(STATIC_DIR / "index.html"))
 
 
 @app.get("/health", response_model=HealthResponse)

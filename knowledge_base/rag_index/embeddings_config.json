@@ -1,0 +1,18 @@
+{
+  "model_name": "all-MiniLM-L6-v2",
+  "embedding_dim": 384,
+  "num_vectors": 4801,
+  "max_per_category": 500,
+  "categories": [
+    "billing_and_payments",
+    "customer_service",
+    "general_inquiry",
+    "human_resources",
+    "it_support",
+    "product_support",
+    "returns_and_exchanges",
+    "sales_and_pre_sales",
+    "service_outages_and_maintenance",
+    "technical_support"
+  ]
+}
